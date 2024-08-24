@@ -1,3 +1,5 @@
+# Node dai: 这个文件配置传感器的类型以及朝向。
+
 syntax = "proto2";
 package apollo.perception;
 
