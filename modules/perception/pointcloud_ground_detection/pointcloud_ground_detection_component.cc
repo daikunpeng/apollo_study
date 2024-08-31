@@ -23,6 +23,7 @@ namespace perception {
 namespace lidar {
 
 using apollo::cyber::common::GetAbsolutePath;
+// add a commit
 
 bool PointCloudGroundDetectComponent::Init() {
   PointCloudGroundDetectComponentConfig comp_config;
