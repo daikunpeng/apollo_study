@@ -31,6 +31,11 @@ bool PointCloudGroundDetectComponent::Init() {
     AERROR << "Get PointCloudGroundDetectComponentConfig file failed";
     return false;
   }
+  // Note dai: 使用 GetProtoConfig 函数获取组件的初始化配置
+  // 但是，该函数没有喂入可见的配置文件路径（因为apollo 中所有组件的配置文件的相对路径都是一样的 /conf/xxx.pb.txt）
+  // 这是因为这个配置文件就是组件对应的 pb.txt 文件！
+  // 比如：
+  // comp_config拥有的属性有：output_channel_name 和 plugin_param
   AINFO << "PointCloud Ground Detect Component Configs: "
         << comp_config.DebugString();
   output_channel_name_ = comp_config.output_channel_name();
