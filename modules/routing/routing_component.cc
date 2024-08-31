@@ -60,6 +60,7 @@ bool RoutingComponent::Init() {
       node_->CreateWriter<routing::RoutingResponse>(attr_history);
   std::weak_ptr<RoutingComponent> self =
       std::dynamic_pointer_cast<RoutingComponent>(shared_from_this());
+  // Note dai: 下面是一个定时器，用来将 routing::RoutingResponse 写入到对应话题中
   timer_.reset(new ::apollo::cyber::Timer(
       FLAGS_routing_response_history_interval_ms,
       [self, this]() {
@@ -81,6 +82,8 @@ bool RoutingComponent::Init() {
 
 bool RoutingComponent::Proc(
     const std::shared_ptr<routing::RoutingRequest>& request) {
+  // Note dai: 在 apollo 的C++接口组件中，不需要显式的定义“订阅器” 用共享指针就行
+  // Note dai: 在这块代码中，一旦共享指针 request 被赋值，就意味着这个 Proc 函数将被调用
   auto response = std::make_shared<routing::RoutingResponse>();
   if (!routing_.Process(request, response.get())) {
     return false;
@@ -88,6 +91,8 @@ bool RoutingComponent::Proc(
   common::util::FillHeader(node_->Name(), response.get());
   response_writer_->Write(response);
   {
+    // Note dai: 因为 response_ 是指向 routing::RoutingResponse 的共享指针，可能同时被多个线程访问修改
+    // 因此需要加锁。使用 lock_guard 比较方便，它会确保执行这个代码块中的代码的时候，只有一个线程可以访问共享指针
     std::lock_guard<std::mutex> guard(mutex_);
     response_ = std::move(response);
   }

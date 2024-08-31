@@ -5,6 +5,10 @@
 # 3. To override the flag values, you must set it after this file, as all Flags
 #    are evaluated strictly in order.
 
+# Note dai: Important.
+# Note dai: This file should be specified in each vehicle.
+# Note dai: navigation_mode 是基于单车的定位及感知，构建本地相对地图，用于调试自动驾驶功能的模式。它只支持单车道行驶。
+
 --vehicle_config_path=/apollo/modules/common/data/vehicle_param.pb.txt
 
 --log_dir=/apollo/data/log
