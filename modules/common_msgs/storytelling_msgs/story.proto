@@ -53,3 +53,7 @@ message Stories {
   optional CloseToStopSign close_to_stop_sign = 6;
   optional CloseToYieldSign close_to_yield_sign = 7;
 }
+// Note dai: 模块 storytelling 发布的消息的定义如上述 Stories 的定义。
+// Note dai: 这个模块订阅 planning 输出的路径规划信息，判断当前车辆即将到达什么场景，把场景信息输出到 stories 的话题中，
+// Note dai: 供 planning 和 control 模块使用
+// Note dai: 如针对这个状况，是否可以增加 close_to_truck_scale， close_to_clearence
