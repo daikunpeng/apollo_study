@@ -118,8 +118,8 @@ bool SingleStageTransformer::Transform(onboard::CameraFrame *frame) {
          << k_mat[6] << ", " << k_mat[7] << ", " << k_mat[8] << "\n";
   const auto &camera2world_pose = frame->camera2world_pose;
 
-  int height = frame->data_provider->src_height();
-  int width = frame->data_provider->src_width();
+  int height = frame->data_provider->src_height();// NOTE DAI: image pixel height
+  int width = frame->data_provider->src_width();// NOTE DAI: image pixel width
   int nr_transformed_obj = 0;
   const float PI = algorithm::Constant<float>::PI();
   for (auto &obj : frame->detected_objects) {
@@ -136,9 +136,9 @@ bool SingleStageTransformer::Transform(onboard::CameraFrame *frame) {
     float object_center[3] = {obj->camera_supplement.local_center[0],
                               obj->camera_supplement.local_center[1],
                               obj->camera_supplement.local_center[2]};
-    float dimension_hwl[3] = {obj->size(2), obj->size(1), obj->size(0)};
+    float dimension_hwl[3] = {obj->size(2), obj->size(1), obj->size(0)};// NOTE DAI: height, width, length
     float rotation_y =
-        theta_ray + static_cast<float>(obj->camera_supplement.alpha);
+        theta_ray + static_cast<float>(obj->camera_supplement.alpha);// NOTE DAI: alpha 是相机与物体的水平夹角
     if (rotation_y < -PI) {
       rotation_y += 2 * PI;
     } else if (rotation_y >= PI) {
