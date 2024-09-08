@@ -32,6 +32,23 @@ namespace algorithm {
 using apollo::perception::base::BaseCameraDistortionModel;
 using apollo::perception::base::BaseCameraModel;
 
+
+
+// **类定义：**
+// `SensorManager` 类是一个单例类，负责管理传感器信息并提供方法来访问和查询传感器数据。
+
+// **方法：**
+
+// * `Init()`: 初始化传感器管理器。
+// * `IsSensorExist(const std::string& name) const`: 检查是否存在一个名为 `name` 的传感器。
+// * `GetSensorInfo(const std::string& name, apollo::perception::base::SensorInfo* sensor_info) const`: 获取名为 `name` 的传感器的信息。
+// * `GetDistortCameraModel(const std::string& name) const` 和 `GetUndistortCameraModel(const std::string& name) const`: 获取名为 `name` 的传感器的畸变和非畸变相机模型。
+// * `IsHdLidar`、`IsLdLidar`、`IsLidar`、`IsRadar`、`IsCamera`、`IsUltrasonic` 和 `IsMainSensor` 方法：检查名为 `name` 的传感器或类型是否为特定类型（例如 HD LiDAR、LD LiDAR 等）。
+// * `GetFrameId(const std::string& name) const`: 获取名为 `name` 的传感器的帧 ID。
+// * `IntrinsicPath(const std::string& frame_id)`: 一个私有方法，构造名为 `frame_id` 的传感器的内在路径。
+
+// 注意：这个类是为了管理传感器信息并提供方法来访问和查询传感器数据，但它不提供任何实际的传感器数据或功能。
+
 class SensorManager {
  public:
   bool Init();

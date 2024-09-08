@@ -46,7 +46,7 @@ bool SensorManager::Init() {
   distort_model_map_.clear();
   undistort_model_map_.clear();
 
-  std::string config_file = GetCommonConfigFile(FLAGS_obs_sensor_meta_file);
+  std::string config_file = GetCommonConfigFile(FLAGS_obs_sensor_meta_file);//sensor_meta.pb.txt
 
   MultiSensorMeta sensor_list_proto;
   if (!GetProtoFromASCIIFile(config_file, &sensor_list_proto)) {
@@ -144,6 +144,7 @@ bool SensorManager::IsHdLidar(const std::string& name) const {
   return this->IsHdLidar(type);
 }
 
+// for newer hd lidars, this function should be extended
 bool SensorManager::IsHdLidar(const SensorType& type) const {
   return type == SensorType::VELODYNE_128 || type == SensorType::VELODYNE_64 ||
          type == SensorType::VELODYNE_32 || type == SensorType::VELODYNE_16;

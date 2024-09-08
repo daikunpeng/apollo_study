@@ -58,6 +58,7 @@ bool CameraDetectionSingleStageComponent::InitObstacleDetector(
   image_width_ = model->get_width();
 
   // Init detector
+  // Note dai: 初始化一个目标检测器，首先需要注册，然后再初始化
   detector_.reset(
       BaseObstacleDetectorRegisterer::GetInstanceByName(plugin_param.name()));
   detector_->Init(init_options);
@@ -89,6 +90,9 @@ bool CameraDetectionSingleStageComponent::InitTransformWrapper(
   return true;
 }
 
+// Note dai: 单阶段摄像头初始化步骤很明确：初始化检测器，初始化摄像头帧，初始化坐标转换器
+// 摄像头帧的作用：用于准备数据
+// 坐标转换器的作用：将摄像头坐标转换为世界坐标
 bool CameraDetectionSingleStageComponent::Init() {
   CameraDetectionSingleStage detection_param;
   if (!GetProtoConfig(&detection_param)) {
@@ -113,10 +117,10 @@ void CameraDetectionSingleStageComponent::CameraToWorldCoor(
     Eigen::Vector3d local_center =
         obj->camera_supplement.local_center.cast<double>();
     obj->center = camera2world * local_center;
-
+    // Note dai: local_center 是目标物在相机的局部坐标系中的坐标。它表示目标物相对于相机的位置，通常是以相机为原点的坐标系中的坐标。
     float x = obj->camera_supplement.local_center[0];
     float z = obj->camera_supplement.local_center[2];
-    float rotation_y = std::atan2(x, z) + obj->camera_supplement.alpha;
+    float rotation_y = std::atan2(x, z) + obj->camera_supplement.alpha; // for heading angle
 
     // enforce rotation_y to be in the range [-pi, pi)
     const float PI = algorithm::Constant<float>::PI();
@@ -129,7 +133,7 @@ void CameraDetectionSingleStageComponent::CameraToWorldCoor(
     Eigen::Vector3d local_theta;
     local_theta << cos(rotation_y), sin(rotation_y), 0;
     Eigen::Vector3d direction = camera2world.linear() * local_theta;
-    obj->direction = direction.cast<float>();
+    obj->direction = direction.cast<float>();// 使用Eigen::Vector3d类型的数据，转换为float类型，表示方向
     obj->theta = std::atan2(obj->direction(1), obj->direction(0));
   }
 }
@@ -151,7 +155,7 @@ bool CameraDetectionSingleStageComponent::Proc(
 bool CameraDetectionSingleStageComponent::InternalProc(
     const std::shared_ptr<apollo::drivers::Image>& msg,
     const std::shared_ptr<onboard::CameraFrame>& out_message) {
-  out_message->data_provider = data_provider_;
+  out_message->data_provider = data_provider_; // Note dai:  out_message 获取 data_provider
   // Fill image
   // todo(daohu527): need use real memory size
   out_message->data_provider->FillImageData(
@@ -180,6 +184,9 @@ bool CameraDetectionSingleStageComponent::InternalProc(
 
   // Detect
   PERF_BLOCK("camera_3d_detector")
+  // Note dai: out_message.get() 返回一个 CameraFrame
+  // Note dai: out_messager 是一个 共享指针 通过 out_message.get() 获取指针指向内参的访问权限
+  // Note dai: 相当于喂进去了一个指针
   detector_->Detect(out_message.get());
   PERF_BLOCK_END
 
