@@ -109,7 +109,7 @@ bool RTKLocalizationComponent::GetLocalizationToImuTF() {
       continue;
     }
     AINFO << "read localization to imu transform: " << tf.DebugString();
-    auto& rotation = tf.transform().rotation();
+    auto& rotation = tf.transform().rotation();// Note Dai: 从tf中读取的imu到localization的旋转
     imu_localization_quat_.reset(new Eigen::Quaterniond(
         rotation.qw(), rotation.qx(), rotation.qy(), rotation.qz()));
     auto& translation = tf.transform().translation();
@@ -125,16 +125,17 @@ void RTKLocalizationComponent::CompensateImuLocalizationExtrinsic(
   CHECK_NOTNULL(localization);
   // calculate orientation_vehicle_world
   apollo::localization::Pose* posepb_loc = localization->mutable_pose();
-  const apollo::common::Quaternion& orientation = posepb_loc->orientation();
+  const apollo::common::Quaternion& orientation = posepb_loc->orientation();// Note Dai: imu 原始的姿态
   const Eigen::Quaterniond quaternion(orientation.qw(), orientation.qx(),
                                       orientation.qy(), orientation.qz());
+  // Note Dai: 将imu的姿态转换到localization的姿态: 首先拿到 imu 相对于 world 的姿态，然后乘以 imu 相对于 localization 的姿态
   Eigen::Quaterniond quat_vehicle_world =
       quaternion * (*imu_localization_quat_);
 
   // set heading according to rotation of vehicle
   posepb_loc->set_heading(common::math::QuaternionToHeading(
       quat_vehicle_world.w(), quat_vehicle_world.x(), quat_vehicle_world.y(),
-      quat_vehicle_world.z()));
+      quat_vehicle_world.z()));// Note Dai: 注意，此处是将车辆姿态转换为车辆的heading角度！
 
   // set euler angles according to rotation of vehicle
   apollo::common::Point3D* eulerangles = posepb_loc->mutable_euler_angles();
