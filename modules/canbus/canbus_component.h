@@ -80,13 +80,13 @@ class CanbusComponent final : public apollo::cyber::TimerComponent {
   void Clear() override;
 
   void PublishChassis();
-  void OnControlCommand(const apollo::control::ControlCommand &control_command);
+  void OnControlCommand(const apollo::control::ControlCommand &control_command);// 处理接收到的控制命令
   void OnChassisCommand(
-      const apollo::external_command::ChassisCommand &chassis_command);
+      const apollo::external_command::ChassisCommand &chassis_command);// 处理接收到的底盘命令
   void OnGuardianCommand(
-      const apollo::guardian::GuardianCommand &guardian_command);
-  apollo::common::Status OnError(const std::string &error_msg);
-  void RegisterCanClients();
+      const apollo::guardian::GuardianCommand &guardian_command);// 处理接收到的守护命令
+  apollo::common::Status OnError(const std::string &error_msg);// 处理错误
+  void RegisterCanClients();// 注册can 客户端
 
   CanbusConf canbus_conf_;
   std::shared_ptr<::apollo::canbus::AbstractVehicleFactory> vehicle_object_ =

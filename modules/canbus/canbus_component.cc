@@ -57,7 +57,7 @@ bool CanbusComponent::Init() {
 
   ClassLoader loader(FLAGS_load_vehicle_library);
   auto vehicle_object = loader.CreateClassObj<AbstractVehicleFactory>(
-      FLAGS_load_vehicle_class_name);
+      FLAGS_load_vehicle_class_name);// 根据 canbus_vehicle 中定义的 vehicle factory 对象
   if (!vehicle_object) {
     AERROR << "Failed to create the vehicle factory: "
            << FLAGS_load_vehicle_class_name;
@@ -66,7 +66,7 @@ bool CanbusComponent::Init() {
   AINFO << "Successfully create vehicle factory: "
         << FLAGS_load_vehicle_class_name;
 
-  vehicle_object_ = vehicle_object;
+  vehicle_object_ = vehicle_object;// vehicle_object_ 是 vehicle factory 对象的指针
   if (!vehicle_object_->Init(&canbus_conf_)) {
     AERROR << "Fail to init vehicle factory.";
     return false;
@@ -88,14 +88,14 @@ bool CanbusComponent::Init() {
   chassis_cmd_reader_config.pending_queue_size =
       FLAGS_control_cmd_pending_queue_size;
 
-  if (FLAGS_receive_guardian) {
+  if (FLAGS_receive_guardian) {// 如果配置文件中定义了接收守护命令，则意味着进入了不正常的状态
     guardian_cmd_reader_ = node_->CreateReader<GuardianCommand>(
         guardian_cmd_reader_config,
         [this](const std::shared_ptr<GuardianCommand> &cmd) {
           ADEBUG << "Received guardian data: run canbus callback.";
-          OnGuardianCommand(*cmd);
+          OnGuardianCommand(*cmd);// 调用 OnGuardianCommand 函数处理接收到的守护命令
         });
-  } else {
+  } else {// 如果配置文件中没有定义接收守护命令
     control_command_reader_ = node_->CreateReader<ControlCommand>(
         control_cmd_reader_config,
         [this](const std::shared_ptr<ControlCommand> &cmd) {
@@ -139,17 +139,18 @@ void CanbusComponent::PublishChassis() {
 }
 
 bool CanbusComponent::Proc() {
-  PublishChassis();
+  PublishChassis();// 发布底盘信息
   if (FLAGS_enable_chassis_detail_pub) {
     vehicle_object_->PublishChassisDetail();
   }
-  vehicle_object_->UpdateHeartbeat();
+  vehicle_object_->UpdateHeartbeat();// 更新心跳
   return true;
 }
 
 void CanbusComponent::OnControlCommand(const ControlCommand &control_command) {
   int64_t current_timestamp = Time::Now().ToMicrosecond();
   // if command coming too soon, just ignore it.
+  // 如果接收到的控制命令太快，则忽略它。因为底盘的接受控制指令的节拍是一定的
   if (current_timestamp - last_timestamp_ < FLAGS_min_cmd_interval * 1000) {
     ADEBUG << "Control command comes too soon. Ignore.\n Required "
               "FLAGS_min_cmd_interval["
@@ -166,10 +167,10 @@ void CanbusComponent::OnControlCommand(const ControlCommand &control_command) {
                                      1e6)
          << " micro seconds";
 
-  vehicle_object_->UpdateCommand(&control_command);
+  vehicle_object_->UpdateCommand(&control_command);// 更新控制命令
 }
 
-void CanbusComponent::OnChassisCommand(const ChassisCommand &chassis_command) {
+void CanbusComponent::OnChassisCommand(const ChassisCommand &chassis_command) {// ChassisCommand 是外部底盘控制命令
   int64_t current_timestamp = Time::Now().ToMicrosecond();
   // if command coming too soon, just ignore it.
   if (current_timestamp - last_timestamp_ < FLAGS_min_cmd_interval * 1000) {
@@ -193,7 +194,7 @@ void CanbusComponent::OnChassisCommand(const ChassisCommand &chassis_command) {
 
 void CanbusComponent::OnGuardianCommand(
     const GuardianCommand &guardian_command) {
-  OnControlCommand(guardian_command.control_command());
+  OnControlCommand(guardian_command.control_command());// 调用 OnControlCommand 函数处理接收到的守护命令
 }
 
 common::Status CanbusComponent::OnError(const std::string &error_msg) {
