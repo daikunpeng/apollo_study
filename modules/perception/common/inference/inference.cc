@@ -36,5 +36,6 @@ void Inference::set_model_info(
   }
 
 }  // namespace inference
+// Note: 这个方法类是一个抽象类。它定义了推理框架的接口，但没有实现具体的推理逻辑。
 }  // namespace perception
 }  // namespace apollo

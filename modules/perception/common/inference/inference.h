@@ -59,7 +59,7 @@ class Inference {
                       const std::vector<std::string> &net_output_names);
 
  protected:
-  int max_batch_size_ = 1;
+  int max_batch_size_ = 1;// Note: 默认batch_size为1, Apollo 实时系统中一次处理一帧数据。（多帧处理也有，但是情况较少）
   int gpu_id_ = 0;
   std::string proto_file_ = "";
   std::vector<std::string> net_output_names_;

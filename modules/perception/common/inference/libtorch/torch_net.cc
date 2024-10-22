@@ -31,6 +31,7 @@ TorchNet::TorchNet(const std::string &model_file,
     : model_file_(model_file), output_names_(outputs), input_names_(inputs) {}
 
 bool TorchNet::Init(const std::map<std::string, std::vector<int>> &shapes) {
+  // 首先，设置设备类型和设备ID
   if (gpu_id_ >= 0) {
     device_type_ = torch::kCUDA;
     device_id_ = gpu_id_;
@@ -40,14 +41,14 @@ bool TorchNet::Init(const std::map<std::string, std::vector<int>> &shapes) {
 
   // Init net
   torch::Device device(device_type_, device_id_);
-  net_ = torch::jit::load(model_file_, device);
-  net_.eval();
+  net_ = torch::jit::load(model_file_, device);// load 接口会根据模型的参数及权重文件，重建模型，并放在GPU中
+  net_.eval();// 评估模式通常用于推理
 
   // add blobs
   for (const auto &name : input_names_) {
-    auto iter = shapes.find(name);
+    auto iter = shapes.find(name);// iter 是一个迭代器 shapes 是一个map，name是key，value 是vector<int>,就是数据块的形状
     if (iter != shapes.end()) {
-      auto blob = std::make_shared<Blob<float>>(iter->second);
+      auto blob = std::make_shared<Blob<float>>(iter->second);// 创建一个Blob对象，iter->second 是形状
       blobs_.emplace(name, blob);
     }
   }
@@ -86,13 +87,13 @@ void TorchNet::Infer() {
   torch::Device device(device_type_, device_id_);
   // Get input data from blob to torch_blob.
   std::vector<torch::jit::IValue> torch_inputs;
-  for (const auto &name : input_names_) {
+  for (const auto &name : input_names_) {// 遍历输入名称，把所有对应的输入数据放在GPU中
     auto blob = get_blob(name);
     if (blob != nullptr) {
       std::vector<int64_t> shape(blob->shape().begin(), blob->shape().end());
       torch::Tensor torch_blob = torch::from_blob(
           blob->data()->mutable_cpu_data(), shape, torch::kFloat32);
-      torch_blob = torch_blob.to(device);
+      torch_blob = torch_blob.to(device);// 把数据从cpu 移动到gpu
       torch_inputs.push_back(torch_blob);
     }
   }
@@ -112,6 +113,7 @@ void TorchNet::Infer() {
   // Infer
   std::vector<torch::Tensor> output =
       net_.forward(torch_inputs).toTensorVector();
+  // 模型加载到GPU，数据拿到了， 就把数据给到 net_ 模型的前向传播函数中进行计算。
 
   // Fill output
   for (size_t i = 0; i < output_names_.size(); ++i) {
