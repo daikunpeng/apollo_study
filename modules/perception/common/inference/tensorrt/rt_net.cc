@@ -706,7 +706,7 @@ bool RTNet::loadWeights(const std::string &model_file, WeightMap *weight_map) {
     AFATAL << "open file " << model_file << " failed";
     return false;
   }
-  for (int i = 0; i < net.layer_size(); ++i) {
+  for (int i = 0; i < net.layer_size(); ++i) {// 遍历模型中的所有层
     std::vector<nvinfer1::Weights> lw;
     for (int j = 0; j < net.layer(i).blobs_size(); ++j) {
       // val memory will be released when deconstructor is called
@@ -721,6 +721,7 @@ bool RTNet::loadWeights(const std::string &model_file, WeightMap *weight_map) {
       auto wt = loadLayerWeights(blob->data().data(), blob->data_size());
       lw.push_back(wt);
     }
+    // 将权重数据加载到 weight_map 中，weight_map 是指向 map 的指针
     (*weight_map)[net.layer(i).name().c_str()] = lw;
   }
   return true;
