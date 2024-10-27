@@ -34,21 +34,29 @@ bool LaneFollowCommandProcessor::ProcessSpecialCommand(
   return true;
 }
 
+// 将外部命令转换成routing请求
 bool LaneFollowCommandProcessor::Convert(
     const std::shared_ptr<LaneFollowCommand>& command,
     std::shared_ptr<apollo::routing::RoutingRequest>& routing_request) const {
+  // 初始化输出对象
   routing_request = std::make_shared<apollo::routing::RoutingRequest>();
+  // 初始化车道点对象
   std::vector<apollo::routing::LaneWaypoint> lane_way_points;
+  // 获取车道点工具
   auto lane_way_tool = GetLaneWayTool();
+  // 如果外部命令没有设置起点，则需要根据当前车辆的位置设置起点
   if (!command->is_start_pose_set()) {
+    // 如果车道点工具认为当前车辆处于park and go场景，则需要根据当前车辆的位置设置起点
     if (lane_way_tool->IsParkandgoScenario()) {
       AINFO << "adc is outside road, in park and go scenario";
+      // 设置起点
       if (!SetStartPose(&lane_way_points)) {
         return false;
       }
       apollo::routing::LaneWaypoint best_lane_way_point;
       double min_distance = std::numeric_limits<double>::max();
       AINFO << "lane_way_points.size()" << lane_way_points.size();
+      // 遍历所有可能的起点，都进行 routing 的计算，并横向比较最优方案
       for (const auto& lane_way_point : lane_way_points) {
         auto tmp_routing_request =
             std::make_shared<apollo::routing::RoutingRequest>();
@@ -70,6 +78,7 @@ bool LaneFollowCommandProcessor::Convert(
         }
         auto routing_response =
             std::make_shared<apollo::routing::RoutingResponse>();
+        // 调用 routing 模块处理请求
         if (!routing_->Process(tmp_routing_request, routing_response.get())) {
           AINFO << "routing_ error  " << tmp_routing_request->DebugString();
           continue;

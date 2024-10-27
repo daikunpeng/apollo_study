@@ -40,7 +40,7 @@
 namespace apollo {
 namespace planning {
 
-class PlanningComponent final
+class PlanningComponent final// final 关键字表示该类不能被继承
     : public cyber::Component<prediction::PredictionObstacles, canbus::Chassis,
                               localization::LocalizationEstimate> {
  public:

@@ -40,7 +40,8 @@ bool ExternalCommandProcessComponent::Init() {
     return false;
   }
   const auto& plugin_manager = cyber::plugin_manager::PluginManager::Instance();
-  for (const auto& processor_class_name : config.processor()) {
+  for (const auto& processor_class_name : config.processor()) {//根据配置文件中的processor，创建对应的command_processor
+    // 包括LaneFollowCommandProcessor、ValetParkingCommandProcessor、ActionCommandProcessor
     command_processors_.emplace_back(
         plugin_manager->CreateInstance<CommandProcessorBase>(
             processor_class_name));

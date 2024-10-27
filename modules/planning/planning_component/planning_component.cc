@@ -38,8 +38,9 @@ using apollo::routing::RoutingResponse;
 using apollo::storytelling::Stories;
 
 bool PlanningComponent::Init() {
-  injector_ = std::make_shared<DependencyInjector>();
+  injector_ = std::make_shared<DependencyInjector>();// 创建一个DependencyInjector对象
 
+  // 首先，决定使用那种规划模式
   if (FLAGS_use_navigation_mode) {
     planning_base_ = std::make_unique<NaviPlanning>(injector_);
   } else {
@@ -57,7 +58,7 @@ bool PlanningComponent::Init() {
       return false;
     }
   }
-
+  // 多数情况下使用的是传统的规划模式
   planning_base_->Init(config_);
 
   planning_command_reader_ = node_->CreateReader<PlanningCommand>(
@@ -199,8 +200,8 @@ bool PlanningComponent::Proc(
     return true;
   }
 
-  ADCTrajectory adc_trajectory_pb;
-  planning_base_->RunOnce(local_view_, &adc_trajectory_pb);
+  ADCTrajectory adc_trajectory_pb;// 创建一个ADCTrajectory对象
+  planning_base_->RunOnce(local_view_, &adc_trajectory_pb);// 运行一次规划
   auto start_time = adc_trajectory_pb.header().timestamp_sec();
   common::util::FillHeader(node_->Name(), &adc_trajectory_pb);
 
@@ -209,7 +210,7 @@ bool PlanningComponent::Proc(
   for (auto& p : *adc_trajectory_pb.mutable_trajectory_point()) {
     p.set_relative_time(p.relative_time() + dt);
   }
-  planning_writer_->Write(adc_trajectory_pb);
+  planning_writer_->Write(adc_trajectory_pb);// 写入规划结果，用于发布
 
   // Send command execution feedback.
   // Error occured while executing the command.
@@ -231,11 +232,12 @@ bool PlanningComponent::Proc(
 
   // record in history
   auto* history = injector_->history();
-  history->Add(adc_trajectory_pb);
+  history->Add(adc_trajectory_pb);// 记录历史轨迹
 
   return true;
 }
 
+// 确认是否需要重新进行全局的路径规划，比如遇到了堵车、修路等
 void PlanningComponent::CheckRerouting() {
   auto* rerouting = injector_->planning_context()
                         ->mutable_planning_status()
