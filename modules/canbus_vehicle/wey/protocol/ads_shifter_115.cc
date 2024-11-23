@@ -29,23 +29,28 @@ const int32_t Adsshifter115::ID = 0x115;
 // public
 Adsshifter115::Adsshifter115() { Reset(); }
 
+// 查询这个消息的周期
 uint32_t Adsshifter115::GetPeriod() const {
   // TODO(ChaoMa) :modify every protocol's period manually
   static const uint32_t PERIOD = 20 * 1000;
   return PERIOD;
 }
 
+// 更新消息数据，底层调用 set_p_ads_shiftmode 和 set_p_ads_targetgear
 void Adsshifter115::UpdateData(uint8_t* data) {
   set_p_ads_shiftmode(data, ads_shiftmode_);
   set_p_ads_targetgear(data, ads_targetgear_);
 }
 
+// 重置消息数据
 void Adsshifter115::Reset() {
   // TODO(ChaoMa) :you should check this manually
   ads_shiftmode_ = Ads_shifter_115::ADS_SHIFTMODE_INVALID;
   ads_targetgear_ = Ads_shifter_115::ADS_TARGETGEAR_N;
 }
 
+// 这个函数设置 ads_shiftmode_ 的值，并返回当前对象的指针。
+// 然后再使用 updateData 就能够把 ads_shiftmode_ 的值写到消息中
 Adsshifter115* Adsshifter115::set_ads_shiftmode(
     Ads_shifter_115::Ads_shiftmodeType ads_shiftmode) {
   ads_shiftmode_ = ads_shiftmode;
