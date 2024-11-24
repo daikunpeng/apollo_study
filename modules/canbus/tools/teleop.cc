@@ -36,7 +36,7 @@
 
 // gflags
 DEFINE_double(throttle_inc_delta, 2.0,
-              "throttle pedal command delta percentage.");
+              "throttle pedal command delta percentage."); // 油门踏板命令增量百分比(2%)
 DEFINE_double(brake_inc_delta, 2.0, "brake pedal delta percentage");
 DEFINE_double(steer_inc_delta, 2.0, "steer delta percentage");
 // TODO(ALL) : switch the acceleration cmd or pedal cmd
@@ -449,7 +449,7 @@ class Teleop {
     chassis_reader_ = node_->CreateReader<Chassis>(
         FLAGS_chassis_topic, [this](const std::shared_ptr<Chassis> &chassis) {
           OnChassis(*chassis);
-        });
+        });// 创建一个订阅者，订阅 chassis 消息，当收到 chassis 消息时，调用 OnChassis 函数
     control_command_writer_ =
         node_->CreateWriter<ControlCommand>(FLAGS_control_command_topic);
     keyboard_thread_.reset(

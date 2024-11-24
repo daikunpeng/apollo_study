@@ -26,7 +26,7 @@
 #include "modules/canbus/common/canbus_gflags.h"
 #include "modules/common/adapters/adapter_gflags.h"
 
-using apollo::control::ControlCommand;
+using apollo::control::ControlCommand;// ControlCommand 是控制指令的消息类型，应该是控制模块的数据定义
 using apollo::cyber::Rate;
 using apollo::cyber::Reader;
 using apollo::cyber::Writer;
@@ -37,9 +37,9 @@ int main(int32_t argc, char **argv) {
   FLAGS_alsologtostderr = true;
 
   // init cyber framework
-  apollo::cyber::Init("testing_canbus_tester");
+  apollo::cyber::Init("testing_canbus_tester");// 初始化 cyber 框架
   std::shared_ptr<apollo::cyber::Node> node_(
-      apollo::cyber::CreateNode("canbus_tester"));
+      apollo::cyber::CreateNode("canbus_tester"));// 创建一个节点
   std::shared_ptr<Writer<ControlCommand>> control_command_writer_ =
       node_->CreateWriter<ControlCommand>(FLAGS_control_command_topic);
 
