@@ -37,7 +37,7 @@ namespace {
 const int32_t kMaxFailAttempt = 10;
 const int32_t CHECK_RESPONSE_STEER_UNIT_FLAG = 1;
 const int32_t CHECK_RESPONSE_SPEED_UNIT_FLAG = 2;
-double angle_init = 0;
+double angle_init = 0; // 初始化方向盘角度
 }  // namespace
 
 ErrorCode WeyController::Init(
@@ -51,17 +51,21 @@ ErrorCode WeyController::Init(
   vehicle_params_.CopyFrom(
       common::VehicleConfigHelper::Instance()->GetConfig().vehicle_param());
   params_.CopyFrom(params);
+  // NOTE DAI: canbus 在启动的时候会根据配置文件配置 driving_mode
+  // 也就是说当启动 canbus 的时候，就决定了是否是自动驾驶模式
   if (!params_.has_driving_mode()) {
     AERROR << "Vehicle conf pb not set driving_mode.";
     return ErrorCode::CANBUS_ERROR;
   }
 
+  // NOTE DAI: 确认 can_sender 是否为空
   if (can_sender == nullptr) {
     AERROR << "Canbus sender is null.";
     return ErrorCode::CANBUS_ERROR;
   }
   can_sender_ = can_sender;
 
+  // NOTE DAI: 确认 message_manager 是否为空
   if (message_manager == nullptr) {
     AERROR << "Protocol manager is null.";
     return ErrorCode::CANBUS_ERROR;
@@ -104,6 +108,8 @@ ErrorCode WeyController::Init(
     return ErrorCode::CANBUS_ERROR;
   }
 
+  // NOTE DAI: 由于 controller 实现车辆控制功能，所以只关心下发控制指令
+  // 添加消息到 can_sender 中
   can_sender_->AddMessage(Ads1111::ID, ads1_111_, false);
   can_sender_->AddMessage(Ads338e::ID, ads3_38e_, false);
   can_sender_->AddMessage(Adseps113::ID, ads_eps_113_, false);
@@ -143,12 +149,13 @@ void WeyController::Stop() {
   }
 }
 
+// NOTE DAI: 利用 message_manager 获取传感器数据后，根据传感器数据设置 chassis 中的数据
 Chassis WeyController::chassis() {
   chassis_.Clear();
 
-  Wey chassis_detail;
-  message_manager_->GetSensorData(&chassis_detail);
-
+  Wey chassis_detail;// 定义一个 Wey 类型的变量 chassis_detail
+  message_manager_->GetSensorData(&chassis_detail);// 从 message_manager 中获取传感器数据
+  // NOTE DAI: 获取传感器数据后，需要根据传感器数据设置 chassis 中的数据
   // 21, 22, previously 1, 2
   // if (driving_mode() == Chassis::EMERGENCY_MODE) {
   //   set_chassis_error_code(Chassis::NO_ERROR);
@@ -439,11 +446,17 @@ ErrorCode WeyController::EnableAutoMode() {
     AINFO << "Already in COMPLETE_AUTO_DRIVE mode.";
     return ErrorCode::OK;
   }
+  // NOTE DAI: 车辆进入自动驾驶模式的流程：
+  // 1. 设置 ads_mode 为 ADS_MODE_ACTIVE_MODE
   ads1_111_->set_ads_mode(Ads1_111::ADS_MODE_ACTIVE_MODE);
+  // 2. 设置 ads_epsmode 为 ADS_EPSMODE_ACTIVE
   ads_eps_113_->set_ads_epsmode(Ads_eps_113::ADS_EPSMODE_ACTIVE);
+  // 3. 设置 ads_reqepstargetangle 为 angle_init
   // unlock the limited steering angle for first cmd within [-10,10] deg
   ads_eps_113_->set_ads_reqepstargetangle(angle_init);
+  // 4. 设置 ads_shiftmode 为 ADS_SHIFTMODE_VALID
   ads_shifter_115_->set_ads_shiftmode(Ads_shifter_115::ADS_SHIFTMODE_VALID);
+  // 5. 设置 ads_req_vin_390_ 为 REQ_VIN_SIGNAL_REQUEST
   ads_req_vin_390_->set_req_vin_signal(Ads_req_vin_390::REQ_VIN_SIGNAL_REQUEST);
   // BCM enable control for horn/ beam/ turnlight
   // notice : if BCM enable, the beam manual control is invalid. If you use the
@@ -452,8 +465,8 @@ ErrorCode WeyController::EnableAutoMode() {
   ads3_38e_->set_ads_bcm_worksts(Ads3_38e::ADS_BCM_WORKSTS_ACTIVE);
   ads3_38e_->set_ads_reqcontrolbcm(Ads3_38e::ADS_REQCONTROLBCM_REQUEST);
   ads3_38e_->set_dippedbeamon(Ads3_38e::DIPPEDBEAMON_TURN_ON);
-
-  can_sender_->Update();
+  // 6. 更新 can_sender
+  can_sender_->Update(); // 调用 Update 函数，将消息发送出去
   const int32_t flag =
       CHECK_RESPONSE_STEER_UNIT_FLAG | CHECK_RESPONSE_SPEED_UNIT_FLAG;
   if (!CheckResponse(flag, true)) {

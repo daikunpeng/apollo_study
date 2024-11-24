@@ -147,6 +147,8 @@ void WeyVehicleFactory::UpdateCommand(
 }
 
 Chassis WeyVehicleFactory::publish_chassis() {
+  // NOTE DAI: 在 controller 中利用 message_manager 获取传感器数据后，设置了 chassis 中的数据
+  // NOTE DAI: 所以在这里可以直接获取 chassis 数据并发布
   Chassis chassis = vehicle_controller_->chassis();
   ADEBUG << chassis.ShortDebugString();
   return chassis;
