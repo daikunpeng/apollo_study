@@ -339,6 +339,7 @@ double Box2d::DistanceTo(const Box2d &box) const {
   return Polygon2d(box).DistanceTo(*this);
 }
 
+// 检查两个 Box2d 对象是否重叠
 bool Box2d::HasOverlap(const Box2d &box) const {
   if (box.max_x() < min_x() || box.min_x() > max_x() || box.max_y() < min_y() ||
       box.min_y() > max_y()) {

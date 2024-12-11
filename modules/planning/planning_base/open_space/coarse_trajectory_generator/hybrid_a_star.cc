@@ -740,7 +740,7 @@ bool HybridAStar::Plan(
   Vec2d ecenter(eposition + evec_to_center.rotate(ephi));
   Box2d ebox(ecenter, ephi, vehicle_param_.length(), vehicle_param_.width());
   print_curves.AddPoint("vehicle_end_box", ebox.GetAllCorners());
-  XYbounds_ = XYbounds;
+  XYbounds_ = XYbounds;//
   // load nodes and obstacles
   start_node_.reset(
       new Node3d({sx}, {sy}, {sphi}, XYbounds_, planner_open_space_config_));
